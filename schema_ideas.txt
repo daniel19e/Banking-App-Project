@@ -1,15 +1,18 @@
-User (UserId, Name, LastName, DOB)
-  Primary Key: UserId
-BankAccount(AccountNumber, Balance, UserId, DateOfCreation)
-  Primary Key: AccountNumber
-  Foreign Key: UserId(User)
-Transaction(TransactionId, TransactionType, Amount, Timestamp, AccountNumber)
-  Primary Key: TransactionId
-  Foreign Key: AccountNumber(BankAccount)
-Report(ReportId, AccountId, UserId, Date)
-  Primary Key: ReportId
-  Foreign Key: AccountId
-  Foreign Key: UserId
+User(UserID, DOB, FirstName, LastName, E-Mail, HashedPassword)
+PK: UserID
+
+Account(AccountNum, Balance, Date Created, UserID)
+PK: AccountNum
+FK: UserID(User)
+
+Transaction(TransactionID, Type, Amount, Timestamp, AccountNum)
+PK: TransactionID
+FK: AccountNum(Account)
+
+Transfer(TransactionID, Destination)
+PK: TransactionID
+FK: TransactionID(Transaction), Destination(Account)
+
 
 User Has BankAccount relationship is one-to-many (one user can have multiple accounts but one account cannot belong to multiple users)
 BankAccount Has Transactions is a one-to-many relationship
