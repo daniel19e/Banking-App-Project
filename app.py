@@ -23,8 +23,8 @@ def deposit():
     pass
 
 
-@app.route("/withdrawal")
-def withdrawal():
+@app.route("/withdraw")
+def withdraw():
     pass
 
 
