@@ -18,11 +18,6 @@ def login():
     pass
 
 
-@app.route("/history")
-def history():
-    pass
-
-
 @app.route("/deposit")
 def deposit():
     pass
@@ -35,4 +30,9 @@ def withdrawal():
 
 @app.route("/transfer")
 def transfer():
+    pass
+
+
+@app.route("/history")
+def history():
     pass
