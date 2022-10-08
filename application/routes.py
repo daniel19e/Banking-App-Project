@@ -13,9 +13,6 @@ class Column(Enum):
     PWH = 5
 
 
-current_user = None
-
-
 @app.route("/")
 def index():
     dbcur.execute("SELECT * FROM BankUser")
@@ -64,7 +61,7 @@ def login():
             return render_template("error.html")
         else:
             print(user)
-            return render_template("index.html")
+            return redirect("/")
     else:
         return render_template("login.html")
 
