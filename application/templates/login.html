@@ -5,6 +5,14 @@
 {% endblock %}
 {% block main %}
 
- <h1>Login</h1>
-
+ <div class="container mt-5 w-50">
+    <form action="/login" method="post">
+        <div class="form-group mb-3">
+            <input autocomplete="off" autofocus class="form-control" name="email" placeholder="Email" type="email">
+        </div>
+        <div class="form-group mb-3">
+            <input class="form-control" name="password" placeholder="Password" type="password">
+        </div>
+        <button class="btn btn-info" type="submit">Log In</button>
+    </form>
 {% endblock %}
