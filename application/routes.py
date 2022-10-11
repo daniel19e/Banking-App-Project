@@ -15,13 +15,13 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 
-class Column(Enum):
-    ID = 0
+class UserColumn(Enum):
+    UID = 0
     DOB = 1
     FNAME = 2
     LNAME = 3
     EMAIL = 4
-    PWH = 5
+    PWHASH = 5
 
 
 def requirelogin(f):
@@ -39,9 +39,9 @@ def requirelogin(f):
 def index():
     currentuser = session["user_id"]
     dbcur.execute(
-        f"SELECT * FROM BankUser WHERE UserID = {currentuser[Column.ID.value]}")
+        f"SELECT fname, lname FROM BankUser WHERE UserID = {currentuser[UserColumn.UID.value]}")
     user = dbcur.fetchall()
-    return render_template("index.html", user=user[0][Column.FNAME.value] + " " + user[0][Column.LNAME.value])
+    return render_template("index.html", user=" ".join(user[0]))
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -53,7 +53,7 @@ def register():
         dbcur.execute(f"SELECT * FROM BankUser WHERE email = '{email}'")
         if len(dbcur.fetchall()):
             # email already in database
-            return render_template('error.html')
+            return render_template('error.html', error_text="Email already registered")
         fname = request.form.get("fname")
         lname = request.form.get("lname")
         dob = request.form.get("dob")
@@ -69,7 +69,7 @@ def register():
                       (id, dob, fname, lname, email, hashpw))
         conn.commit()
         dbcur.execute(f"SELECT * FROM BankUser WHERE UserID = {id}")
-        session["user_id"] = dbcur.fetchall()[Column.ID.value]
+        session["user_id"] = dbcur.fetchall()[UserColumn.UID.value]
         flash("user created")
         return redirect('/')
 
@@ -85,12 +85,12 @@ def login():
         pw = request.form.get("password")
         dbcur.execute(f"SELECT * FROM BankUser WHERE Email = '{email}'")
         user = dbcur.fetchall()
-        print(user)
-        if not bcrypt.check_password_hash(user[0][Column.PWH.value], pw):
-            return render_template("error.html")
+        # check email is in database and input password matches the hashed password stored
+        if not (user and bcrypt.check_password_hash(user[0][UserColumn.PWHASH.value], pw)):
+            return render_template("error.html", error_text="Wrong credentials.")
         else:
             print(user)
-            session["user_id"] = user[Column.ID.value]
+            session["user_id"] = user[UserColumn.UID.value]
             return redirect("/")
     else:
         return render_template("login.html")
