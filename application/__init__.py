@@ -13,7 +13,7 @@ conn = psycopg2.connect(
     host="localhost",
     database="bankapp",
     user="Daniel",  # need to setup environment variable
-    password="Karma010119")  # need to setup environment variable
+    password="placeholder")  # need to setup environment variable
 
 # Open a cursor to perform database operations
 dbcur = conn.cursor()
