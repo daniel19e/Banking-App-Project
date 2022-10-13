@@ -1,0 +1,24 @@
+{% extends "navbar.html" %}
+
+{% block title %}
+    Create Account
+{% endblock %}
+{% block main %}
+<div class="container mt-5 w-50">
+    <form action="/createaccount" method="post">
+        <h2>Create Account</h2>
+        <div class="input-group mb-3">
+            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                <input type="radio" class="btn-check" name="accounttype" id="btnchecking" value="checking" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="btnchecking">Checking</label>
+              
+                <input type="radio" class="btn-check" name="accounttype" id="btnsavings" value="savings" autocomplete="off">
+                <label class="btn btn-outline-primary" for="btnsavings">Savings</label>
+            </div>
+        </div>
+        <div class="form-group mb-3">
+            <input autocomplete="off" autofocus class="form-control" name="accountname" placeholder="Account Name" type="text">
+        </div>
+        <button class="btn btn-info" type="submit">Submit</button>
+    </form>
+{% endblock %}
