@@ -37,6 +37,9 @@ def requirelogin(f):
 @app.route("/")
 @requirelogin
 def index():
+    # currently, url only shows the current user's name,
+    # we want to display the accounts they've created with the respective balances.
+    # also, when we click on one particular account it should show history for that account
     currentuser = session["user_id"]
     dbcur.execute(
         f"SELECT fname, lname FROM BankUser WHERE UserID = {currentuser[UserColumn.UID.value]}")
@@ -59,7 +62,7 @@ def register():
         dob = request.form.get("dob")
         if request.form.get("password") != request.form.get("pwconfirmation"):
             # password doesn't match confirmation field
-            return render_template('error.html')
+            return render_template('error.html', error_text="Passwords don't match.")
 
         hashpw = bcrypt.generate_password_hash(
             request.form.get("password")).decode('utf-8')
@@ -119,4 +122,5 @@ def transfer():
 
 @ app.route("/history")
 def history():
+    # all transactions made by current user for all of their accounts
     pass
