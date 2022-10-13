@@ -9,11 +9,11 @@ bcrypt = Bcrypt(app)
 app.config['SECRET_KEY'] = 'vzj9ew5aeuqf5m19'
 
 
-conn = psycopg2.connect(
+db_connection = psycopg2.connect(
     host="localhost",
     database="bankapp",
     user="Daniel",  # need to setup environment variable
     password="placeholder")  # need to setup environment variable
 
 # Open a cursor to perform database operations
-dbcur = conn.cursor()
+db_cursor = db_connection.cursor()

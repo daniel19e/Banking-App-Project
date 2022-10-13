@@ -1,5 +1,5 @@
 from flask import flash, redirect, render_template, request, session
-from application import app, dbcur, bcrypt, conn
+from application import app, db_cursor, bcrypt, db_connection
 import uuid
 from enum import Enum
 from tempfile import mkdtemp
@@ -41,9 +41,9 @@ def index():
     # we want to display the accounts they've created with the respective balances.
     # also, when we click on one particular account it should show history for that account
     currentuser = session["user_id"]
-    dbcur.execute(
+    db_cursor.execute(
         f"SELECT fname, lname FROM BankUser WHERE UserID = {currentuser[UserColumn.UID.value]}")
-    user = dbcur.fetchall()
+    user = db_cursor.fetchall()
     return render_template("index.html", user=" ".join(user[0]))
 
 
@@ -53,8 +53,8 @@ def register():
         session.clear()
         id = uuid.uuid4().int & (1 << 30)-1
         email = request.form.get("email")
-        dbcur.execute(f"SELECT * FROM BankUser WHERE email = '{email}'")
-        if len(dbcur.fetchall()):
+        db_cursor.execute(f"SELECT * FROM BankUser WHERE email = '{email}'")
+        if len(db_cursor.fetchall()):
             # email already in database
             return render_template('error.html', error_text="Email already registered")
         fname = request.form.get("fname")
@@ -68,11 +68,11 @@ def register():
             request.form.get("password")).decode('utf-8')
 
         # add new user to database
-        dbcur.execute("INSERT INTO BankUser (UserID, Dob, Fname, Lname, Email, PwHash) VALUES (%s, %s, %s, %s, %s, %s)",
-                      (id, dob, fname, lname, email, hashpw))
-        conn.commit()
-        dbcur.execute(f"SELECT * FROM BankUser WHERE UserID = {id}")
-        session["user_id"] = dbcur.fetchall()[UserColumn.UID.value]
+        db_cursor.execute("INSERT INTO BankUser (UserID, Dob, Fname, Lname, Email, PwHash) VALUES (%s, %s, %s, %s, %s, %s)",
+                          (id, dob, fname, lname, email, hashpw))
+        db_connection.commit()
+        db_cursor.execute(f"SELECT * FROM BankUser WHERE UserID = {id}")
+        session["user_id"] = db_cursor.fetchall()[UserColumn.UID.value]
         flash("user created")
         return redirect('/')
 
@@ -86,13 +86,12 @@ def login():
     if request.method == "POST":
         email = request.form.get("email")
         pw = request.form.get("password")
-        dbcur.execute(f"SELECT * FROM BankUser WHERE Email = '{email}'")
-        user = dbcur.fetchall()
+        db_cursor.execute(f"SELECT * FROM BankUser WHERE Email = '{email}'")
+        user = db_cursor.fetchall()
         # check email is in database and input password matches the hashed password stored
         if not (user and bcrypt.check_password_hash(user[0][UserColumn.PWHASH.value], pw)):
             return render_template("error.html", error_text="Wrong credentials.")
         else:
-            print(user)
             session["user_id"] = user[UserColumn.UID.value]
             return redirect("/")
     else:
