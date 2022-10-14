@@ -136,12 +136,12 @@ def withdraw():
     pass
 
 
-@ app.route("/transfer")
+@app.route("/transfer")
 def transfer():
     pass
 
 
-@ app.route("/history")
+@app.route("/history")
 def history():
     # all transactions made by current user for all of their accounts
     pass
