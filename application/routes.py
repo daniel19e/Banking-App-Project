@@ -103,6 +103,7 @@ def logout():
     session.clear()
     return redirect("/login")
 
+
 @app.route("/createaccount", methods=["GET", "POST"])
 @requirelogin
 def createaccount():
@@ -116,19 +117,21 @@ def createaccount():
         accountType = request.form['accounttype']
         # from datetime
         curDate = date.today()
-        db_cursor.execute("INSERT INTO BankAccount (accnum, userid, acctype, accname, balance, creationdate) VALUES (%s, %s, %s, %s, %s, %s)", (accountID, userID, accountType, accountName, balance, curDate))
+        db_cursor.execute("INSERT INTO BankAccount (accnum, userid, acctype, accname, balance, creationdate) VALUES (%s, %s, %s, %s, %s, %s)",
+                          (accountID, userID, accountType, accountName, balance, curDate))
         db_connection.commit()
         flash("account created")
         return redirect("/")
-    else:   
+    else:
         return render_template("createaccount.html")
 
-@ app.route("/deposit")
+
+@app.route("/deposit")
 def deposit():
     pass
 
 
-@ app.route("/withdraw")
+@app.route("/withdraw")
 def withdraw():
     pass
 
