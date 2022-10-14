@@ -1,0 +1,16 @@
+{% extends "navbar.html" %}
+
+{% block title %}
+Withdraw
+{% endblock %}
+{% block main %}
+
+<div class="container mt-5 w-50">
+    <form action="/withdraw" method="post">
+        <div class="form-group mb-3">
+            <input autocomplete="off" autofocus class="form-control" name="amount" placeholder="Transaction Amount"
+                type="text">
+        </div>
+        <button class="btn btn-info" type="submit">Withdraw</button>
+    </form>
+    {% endblock %}

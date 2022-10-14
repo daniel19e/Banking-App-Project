@@ -5,7 +5,7 @@ from enum import Enum
 from tempfile import mkdtemp
 from flask_session import Session
 from functools import wraps
-from datetime import date
+from datetime import date, datetime
 
 SESSION_TYPE = 'redis'
 app.config.from_object(__name__)
@@ -103,6 +103,7 @@ def logout():
     session.clear()
     return redirect("/login")
 
+
 @app.route("/createaccount", methods=["GET", "POST"])
 @requirelogin
 def createaccount():
@@ -116,29 +117,68 @@ def createaccount():
         accountType = request.form['accounttype']
         # from datetime
         curDate = date.today()
-        db_cursor.execute("INSERT INTO BankAccount (accnum, userid, acctype, accname, balance, creationdate) VALUES (%s, %s, %s, %s, %s, %s)", (accountID, userID, accountType, accountName, balance, curDate))
+        db_cursor.execute("INSERT INTO BankAccount (accnum, userid, acctype, accName, balance, creationdate) VALUES (%s, %s, %s, %s, %s, %s)",
+                          (accountID, userID, accountType, accountName, balance, curDate))
         db_connection.commit()
         flash("account created")
         return redirect("/")
-    else:   
+    else:
         return render_template("createaccount.html")
 
-@ app.route("/deposit")
+
+@app.route("/deposit", methods=["GET", "POST"])
+@requirelogin
 def deposit():
-    pass
+    # need to find the account number for the transaction
+    # get it from the bank account
+    if request.method == "POST":
+        amount = request.form.get("amount")
+        transaction_id = uuid.uuid4().int & (1 << 30)-1
+        timestamp = datetime.now()
+
+        db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
+                          (transaction_id, "deposit", amount, timestamp, 123))
+
+        db_cursor.execute(
+            f"UPDATE BankAccount SET balance = balance + {amount} WHERE AccNum = 123")
+        db_connection.commit()
+        return redirect('/')
+    else:
+        return render_template('deposit.html')
 
 
-@ app.route("/withdraw")
+@app.route("/withdraw", methods=["GET", "POST"])
+@requirelogin
 def withdraw():
-    pass
+    # need to find the account number for the transaction
+    # get it from the bank account
+    if request.method == "POST":
+        amount = request.form.get("amount")
+        transaction_id = uuid.uuid4().int & (1 << 30)-1
+        timestamp = datetime.now()
+
+        # hard coding account to 123 for now
+        db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
+                          (transaction_id, "withdraw", amount, timestamp, 123))
+        db_cursor.execute("SELECT balance FROM BankAccount WHERE accnum = 123")
+        (balance,) = db_cursor.fetchone()
+        if int(amount) <= balance:
+            db_cursor.execute(
+                f"UPDATE BankAccount SET balance = balance - {amount} WHERE AccNum = 123")
+        else:
+            return render_template('error.html', error_text="Can't withdraw more than current balance :,( ")
+        db_connection.commit()
+        return redirect('/')
+    else:
+        return render_template('withdraw.html')
 
 
-@ app.route("/transfer")
+@app.route("/transfer")
 def transfer():
     pass
 
 
-@ app.route("/history")
+@app.route("/history")
 def history():
     # all transactions made by current user for all of their accounts
     pass
