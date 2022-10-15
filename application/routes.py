@@ -53,14 +53,19 @@ def index():
     db_cursor.execute(
         f"SELECT accnum FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
     accIDs = db_cursor.fetchall()
+    db_cursor.execute(
+        f"SELECT acctype FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
+    acctypes = db_cursor.fetchall()
     accountID = []
     balanceStrings = []
     nameStrings = []
     length = []
+    typeStrings= []
     for i in range(len(accnames)):
         length.append(i)
         accountID.append(accIDs[i][0])
         nameStrings.append("".join(accnames[i]).capitalize())
+        typeStrings.append("".join(acctypes[i]).capitalize())
         # extracts float from balances dict and formats it to currency notation
         balanceStrings.append("{:.2f}".format(balances[i][0]))
 
@@ -68,8 +73,10 @@ def index():
     last_four_digits = [str(x)[-4:] for x in accountID]
     return render_template("index.html", user=" ".join([x.capitalize() for x in user[0]]),
                            balanceStrings=balanceStrings,
-                           nameStrings=nameStrings, length=length,
+                           nameStrings=nameStrings,
+                           length=length,
                            accountID=accountID,
+                           typeStrings=typeStrings,
                            last_four_digits=last_four_digits)
 
 
@@ -221,4 +228,5 @@ def account():
     bal = ("{:.2f}".format(bal[0][0]))
     db_cursor.execute(f"SELECT * FROM transaction WHERE AccNum = {accNum}")
     transaction_history = db_cursor.fetchall()
+    transaction_history.reverse()
     return render_template('account.html', accNum=accNum, bal=bal, transaction_rows=transaction_history)
