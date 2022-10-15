@@ -60,11 +60,17 @@ def index():
     for i in range(len(accnames)):
         length.append(i)
         accountID.append(accIDs[i][0])
-        nameStrings.append(" ".join(accnames[i]))
-        # extracts float from balances dict and formats it to curreny notation
+        nameStrings.append("".join(accnames[i]).capitalize())
+        # extracts float from balances dict and formats it to currency notation
         balanceStrings.append("{:.2f}".format(balances[i][0]))
 
-    return render_template("index.html", user=" ".join(user[0]), balanceStrings=balanceStrings, nameStrings=nameStrings, length=length, accountID=accountID)
+    # get last four digits of account number to display
+    last_four_digits = [str(x)[-4:] for x in accountID]
+    return render_template("index.html", user=" ".join([x.capitalize() for x in user[0]]),
+                           balanceStrings=balanceStrings,
+                           nameStrings=nameStrings, length=length,
+                           accountID=accountID,
+                           last_four_digits=last_four_digits)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -154,7 +160,8 @@ def deposit():
         transaction_id = uuid.uuid4().int & (1 << 30)-1
         timestamp = datetime.now()
         accNum = session["accNum"]
-        db_cursor.execute(f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
+        db_cursor.execute(
+            f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
         acc_bal = db_cursor.fetchall()[0][0]
         db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
                           (transaction_id, "deposit", amount, timestamp, accNum))
@@ -175,7 +182,8 @@ def withdraw():
         transaction_id = uuid.uuid4().int & (1 << 30)-1
         timestamp = datetime.now()
         accNum = session["accNum"]
-        db_cursor.execute(f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
+        db_cursor.execute(
+            f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
         acc_bal = db_cursor.fetchall()[0][0]
         db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
                           (transaction_id, "withdraw", amount, timestamp, accNum))
@@ -201,14 +209,14 @@ def history():
     # all transactions made by current user for all of their accounts
     pass
 
+
 @app.route("/account", methods=["GET", "POST"])
 @requirelogin
 def account():
     accNum = request.args.get('accNum')
     session["accNum"] = accNum
-    db_cursor.execute(f"SELECT balance FROM BankAccount WHERE accnum = {accNum}")
+    db_cursor.execute(
+        f"SELECT balance FROM BankAccount WHERE accnum = {accNum}")
     bal = db_cursor.fetchall()
     bal = ("{:.2f}".format(bal[0][0]))
     return render_template('account.html', accNum=accNum, bal=bal)
-
-
