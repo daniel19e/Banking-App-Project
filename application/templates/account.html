@@ -5,10 +5,37 @@
 {% endblock %}
 {% block main %}
 
-<h1>Account Page</h1>
-<h2>Account Num: {{ accNum }}</h2>
-<h2>Account Balance: {{ bal }}</h2>
-<a class="link-primary" href="/deposit">Deposit</a>
-<a class="link-primary" href="/withdraw">Withdraw</a>
+<div class="container mt-5 w-50">    
+<div class="card">
+    <div class="card-header">
+        Account Number: {{accNum}}
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">Account Balance: ${{bal}}</h5>
+      <p class="card-text">
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Transaction Type</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for i in transaction_rows %}
+              <tr>
+                <td>{{i[1]}}</td>
+                <td>{{i[2]}}</td>
+                <td>{{i[3]}}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+      </p>
+      <a href="/deposit" class="btn btn-info">Deposit</a>
+      <a href="/withdraw" class="btn btn-info">Withdraw</a>
+    </div>
+  </div>
+  </div>
 
 {% endblock %}

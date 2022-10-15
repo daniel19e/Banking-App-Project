@@ -219,4 +219,6 @@ def account():
         f"SELECT balance FROM BankAccount WHERE accnum = {accNum}")
     bal = db_cursor.fetchall()
     bal = ("{:.2f}".format(bal[0][0]))
-    return render_template('account.html', accNum=accNum, bal=bal)
+    db_cursor.execute(f"SELECT * FROM transaction WHERE AccNum = {accNum}")
+    transaction_history = db_cursor.fetchall()
+    return render_template('account.html', accNum=accNum, bal=bal, transaction_rows=transaction_history)
