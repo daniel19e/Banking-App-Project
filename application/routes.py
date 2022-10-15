@@ -44,7 +44,27 @@ def index():
     db_cursor.execute(
         f"SELECT fname, lname FROM BankUser WHERE UserID = {currentuser[UserColumn.UID.value]}")
     user = db_cursor.fetchall()
-    return render_template("index.html", user=" ".join(user[0]))
+    db_cursor.execute(
+        f"SELECT accname FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
+    accnames = db_cursor.fetchall()
+    db_cursor.execute(
+        f"SELECT balance FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
+    balances = db_cursor.fetchall()
+    db_cursor.execute(
+        f"SELECT accnum FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
+    accIDs = db_cursor.fetchall()
+    accountID = []
+    balanceStrings = []
+    nameStrings = []
+    length = []
+    for i in range(len(accnames)):
+        length.append(i)
+        accountID.append(accIDs[i][0])
+        nameStrings.append(" ".join(accnames[i]))
+        # extracts float from balances dict and formats it to curreny notation
+        balanceStrings.append("{:.2f}".format(balances[i][0]))
+
+    return render_template("index.html", user=" ".join(user[0]), balanceStrings=balanceStrings, nameStrings=nameStrings, length=length, accountID=accountID)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -129,18 +149,18 @@ def createaccount():
 @app.route("/deposit", methods=["GET", "POST"])
 @requirelogin
 def deposit():
-    # need to find the account number for the transaction
-    # get it from the bank account
     if request.method == "POST":
         amount = request.form.get("amount")
         transaction_id = uuid.uuid4().int & (1 << 30)-1
         timestamp = datetime.now()
-
+        accNum = session["accNum"]
+        db_cursor.execute(f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
+        acc_bal = db_cursor.fetchall()[0][0]
         db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
-                          (transaction_id, "deposit", amount, timestamp, 123))
+                          (transaction_id, "deposit", amount, timestamp, accNum))
 
         db_cursor.execute(
-            f"UPDATE BankAccount SET balance = balance + {amount} WHERE AccNum = 123")
+            f"UPDATE BankAccount SET balance = {acc_bal} + {amount} WHERE AccNum = {accNum}")
         db_connection.commit()
         return redirect('/')
     else:
@@ -150,21 +170,19 @@ def deposit():
 @app.route("/withdraw", methods=["GET", "POST"])
 @requirelogin
 def withdraw():
-    # need to find the account number for the transaction
-    # get it from the bank account
     if request.method == "POST":
         amount = request.form.get("amount")
         transaction_id = uuid.uuid4().int & (1 << 30)-1
         timestamp = datetime.now()
-
-        # hard coding account to 123 for now
+        accNum = session["accNum"]
+        db_cursor.execute(f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
+        acc_bal = db_cursor.fetchall()[0][0]
         db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
-                          (transaction_id, "withdraw", amount, timestamp, 123))
-        db_cursor.execute("SELECT balance FROM BankAccount WHERE accnum = 123")
-        (balance,) = db_cursor.fetchone()
-        if int(amount) <= balance:
+                          (transaction_id, "withdraw", amount, timestamp, accNum))
+
+        if float(amount) <= acc_bal:
             db_cursor.execute(
-                f"UPDATE BankAccount SET balance = balance - {amount} WHERE AccNum = 123")
+                f"UPDATE BankAccount SET balance = {acc_bal} - {amount} WHERE AccNum = {accNum}")
         else:
             return render_template('error.html', error_text="Can't withdraw more than current balance :,( ")
         db_connection.commit()
@@ -182,3 +200,15 @@ def transfer():
 def history():
     # all transactions made by current user for all of their accounts
     pass
+
+@app.route("/account", methods=["GET", "POST"])
+@requirelogin
+def account():
+    accNum = request.args.get('accNum')
+    session["accNum"] = accNum
+    db_cursor.execute(f"SELECT balance FROM BankAccount WHERE accnum = {accNum}")
+    bal = db_cursor.fetchall()
+    bal = ("{:.2f}".format(bal[0][0]))
+    return render_template('account.html', accNum=accNum, bal=bal)
+
+
