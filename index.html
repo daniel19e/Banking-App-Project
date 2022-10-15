@@ -1,0 +1,25 @@
+{% extends "navbar.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+{% block main %}
+<div class="container mt-5 w-50">    
+    <h1> Welcome {{ user }}</h1> 
+</div>
+    <!-- Here we need to add information for all the bank accounts for the user i.e balance and link to account info -->
+<table style="width:50%" class="container mt-5 w-50">
+    <tr>
+        <th>Account Name</th>
+        <th>Balance</th>
+        <th> </th>
+    </tr>
+    {% for i in length: %}
+    <tr>
+        <td>{{ nameStrings[i] }}</td>
+        <td>{{ balanceStrings[i] }}</td>
+        <td><a class="link-primary" href="/account?accNum={{ accountID[i] }}">Account Link (placeholder)</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

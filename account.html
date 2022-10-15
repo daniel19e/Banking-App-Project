@@ -1,0 +1,14 @@
+{% extends "navbar.html" %}
+
+{% block title %}
+    Create Account
+{% endblock %}
+{% block main %}
+
+<h1>Account Page</h1>
+<h2>Account Num: {{ accNum }}</h2>
+<h2>Account Balance: {{ bal }}</h2>
+<a class="link-primary" href="/deposit">Deposit</a>
+<a class="link-primary" href="/withdraw">Withdraw</a>
+
+{% endblock %}
