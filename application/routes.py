@@ -24,6 +24,15 @@ class UserColumn(Enum):
     PWHASH = 5
 
 
+class AccountColumn(Enum):
+    ACCNUM = 0
+    BAL = 1
+    CREATED = 2
+    UID = 3
+    ACCNAME = 4
+    ACCTYPE = 5
+
+
 def requirelogin(f):
     # we should apply this to all the routes, see index example
     @wraps(f)
@@ -45,30 +54,20 @@ def index():
         f"SELECT fname, lname FROM BankUser WHERE UserID = {currentuser[UserColumn.UID.value]}")
     user = db_cursor.fetchall()
     db_cursor.execute(
-        f"SELECT accname FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
-    accnames = db_cursor.fetchall()
-    db_cursor.execute(
-        f"SELECT balance FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
-    balances = db_cursor.fetchall()
-    db_cursor.execute(
-        f"SELECT accnum FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
-    accIDs = db_cursor.fetchall()
-    db_cursor.execute(
-        f"SELECT acctype FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
-    acctypes = db_cursor.fetchall()
-    accountID = []
-    balanceStrings = []
-    nameStrings = []
-    length = []
-    typeStrings= []
-    for i in range(len(accnames)):
-        length.append(i)
-        accountID.append(accIDs[i][0])
-        nameStrings.append("".join(accnames[i]).capitalize())
-        typeStrings.append("".join(acctypes[i]).capitalize())
-        # extracts float from balances dict and formats it to currency notation
-        balanceStrings.append("{:.2f}".format(balances[i][0]))
-
+        f"SELECT * FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
+    account_rows = db_cursor.fetchall()
+    print("debuggg")
+    print(account_rows)
+    accountID = [account[AccountColumn.ACCNUM.value]
+                 for account in account_rows]
+    # extracts float from balances dict and formats it to currency notation
+    balanceStrings = ["{:.2f}".format(
+        account[AccountColumn.BAL.value]) for account in account_rows]
+    nameStrings = ["".join(account[AccountColumn.ACCNAME.value]).capitalize()
+                   for account in account_rows]
+    length = [x for x in range(len(account_rows))]
+    typeStrings = ["".join(account[AccountColumn.ACCTYPE.value]).capitalize()
+                   for account in account_rows]
     # get last four digits of account number to display
     last_four_digits = [str(x)[-4:] for x in accountID]
     return render_template("index.html", user=" ".join([x.capitalize() for x in user[0]]),
