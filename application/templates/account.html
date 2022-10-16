@@ -1,41 +1,46 @@
 {% extends "navbar.html" %}
 
 {% block title %}
-    Account Details
+Account Details
 {% endblock %}
 {% block main %}
 
-<div class="container mt-5 w-50">    
-<div class="card">
+<div class="container mt-5 w-50">
+  <div class="card">
     <div class="card-header">
-        Account Number: {{accNum}}
+      Account Number: {{accNum}}
     </div>
     <div class="card-body">
       <h5 class="card-title">Account Balance: ${{bal}}</h5>
       <p class="card-text">
-        <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">Transaction Type</th>
-                <th scope="col">Amount</th>
-                <th scope="col">Timestamp</th>
-              </tr>
-            </thead>
-            <tbody>
-            {% for i in transaction_rows %}
-              <tr>
-                <td>{{i[1]}}</td>
-                <td>{{i[2]}}</td>
-                <td>{{i[3]}}</td>
-              </tr>
-            {% endfor %}
-            </tbody>
-          </table>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Transaction Type</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in transaction_rows %}
+          <tr>
+            <td>{{row[1] | capitalize}}</td>
+            {%if row[1] == "deposit"%}
+            <td style="color: green">+${{row[2]}}</td>
+            {%endif%}
+            {%if row[1] == "withdraw"%}
+            <td style="color: red">-${{row[2]}}</td>
+            {%endif%}
+            <td>{{row[3]}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
       </p>
       <a href="/deposit" class="btn btn-info">Deposit</a>
       <a href="/withdraw" class="btn btn-info">Withdraw</a>
     </div>
   </div>
-  </div>
+</div>
 
 {% endblock %}
