@@ -24,6 +24,8 @@ class UserColumn(Enum):
     PWHASH = 5
 
 # find some way to not require this, get values directly from select statement
+
+
 class AccountColumn(Enum):
     ACCNUM = 0
     UID = 1
@@ -57,19 +59,19 @@ def index():
         f"SELECT * FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
     account_rows = db_cursor.fetchall()
     length = [x for x in range(len(account_rows))]
-    accountID = [account[AccountColumn.ACCNUM.value] 
-                    for account in account_rows]
+    accountID = [account[AccountColumn.ACCNUM.value]
+                 for account in account_rows]
     # extracts float from balances dict and formats it to currency notation
-    balanceStrings = ["{:.2f}".format(account[AccountColumn.BAL.value]) 
-                    for account in account_rows]
+    balanceStrings = ["{:.2f}".format(account[AccountColumn.BAL.value])
+                      for account in account_rows]
     typeStrings = ["".join(str(account[AccountColumn.ACCTYPE.value])).capitalize()
-                    for account in account_rows]
+                   for account in account_rows]
     nameStrings = ["".join(str(account[AccountColumn.ACCNAME.value])).capitalize()
-                    for account in account_rows]
-    
+                   for account in account_rows]
+
     # get last four digits of account number to display
     last_four_digits = [str(x)[-4:] for x in accountID]
-    
+
     return render_template("index.html", user=" ".join([x.capitalize() for x in user[0]]),
                            balanceStrings=balanceStrings,
                            nameStrings=nameStrings,
@@ -191,15 +193,16 @@ def withdraw():
         db_cursor.execute(
             f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
         acc_bal = db_cursor.fetchall()[0][0]
-        db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
-                          (transaction_id, "withdraw", amount, timestamp, accNum))
 
         if float(amount) <= acc_bal:
+            db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
+                              (transaction_id, "withdraw", amount, timestamp, accNum))
             db_cursor.execute(
                 f"UPDATE BankAccount SET balance = {acc_bal} - {amount} WHERE AccNum = {accNum}")
+            db_connection.commit()
         else:
             return render_template('error.html', error_text="Can't withdraw more than current balance :,( ")
-        db_connection.commit()
+
         return redirect('/')
     else:
         return render_template('withdraw.html')
