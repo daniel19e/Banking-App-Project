@@ -19,5 +19,5 @@ Our project is a banking web application where registered users have the option 
 * PostgreSQL
 * Flask Framework (Python web dev framework)
 * Flask-bcrypt for password hashing, https://flask-bcrypt.readthedocs.io/en/1.0.1/
-* Flask-SQLalchemy library to manage postgres database
+* Flask-psycopg2 library to manage postgres database
 * Bootstrap CSS Framework
