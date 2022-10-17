@@ -23,14 +23,14 @@ class UserColumn(Enum):
     EMAIL = 4
     PWHASH = 5
 
-
+# find some way to not require this, get values directly from select statement
 class AccountColumn(Enum):
     ACCNUM = 0
-    BAL = 1
-    CREATED = 2
-    UID = 3
-    ACCNAME = 4
-    ACCTYPE = 5
+    UID = 1
+    ACCTYPE = 2
+    ACCNAME = 3
+    BAL = 4
+    CREATED = 5
 
 
 def requirelogin(f):
@@ -56,18 +56,20 @@ def index():
     db_cursor.execute(
         f"SELECT * FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
     account_rows = db_cursor.fetchall()
-    accountID = [account[AccountColumn.ACCNUM.value]
-                 for account in account_rows]
-    # extracts float from balances dict and formats it to currency notation
-    balanceStrings = ["{:.2f}".format(
-        account[AccountColumn.BAL.value]) for account in account_rows]
-    nameStrings = ["".join(account[AccountColumn.ACCNAME.value]).capitalize()
-                   for account in account_rows]
     length = [x for x in range(len(account_rows))]
-    typeStrings = ["".join(account[AccountColumn.ACCTYPE.value]).capitalize()
-                   for account in account_rows]
+    accountID = [account[AccountColumn.ACCNUM.value] 
+                    for account in account_rows]
+    # extracts float from balances dict and formats it to currency notation
+    balanceStrings = ["{:.2f}".format(account[AccountColumn.BAL.value]) 
+                    for account in account_rows]
+    typeStrings = ["".join(str(account[AccountColumn.ACCTYPE.value])).capitalize()
+                    for account in account_rows]
+    nameStrings = ["".join(str(account[AccountColumn.ACCNAME.value])).capitalize()
+                    for account in account_rows]
+    
     # get last four digits of account number to display
     last_four_digits = [str(x)[-4:] for x in accountID]
+    
     return render_template("index.html", user=" ".join([x.capitalize() for x in user[0]]),
                            balanceStrings=balanceStrings,
                            nameStrings=nameStrings,
