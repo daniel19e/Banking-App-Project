@@ -56,7 +56,7 @@ def index():
         f"SELECT fname, lname FROM BankUser WHERE UserID = {currentuser[UserColumn.UID.value]}")
     user = db_cursor.fetchall()
     db_cursor.execute(
-        f"SELECT * FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
+        f"SELECT * FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]} ORDER BY accname DESC")
     account_rows = db_cursor.fetchall()
     length = [x for x in range(len(account_rows))]
     accountID = [account[AccountColumn.ACCNUM.value]
