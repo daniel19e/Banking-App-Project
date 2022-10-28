@@ -58,7 +58,7 @@ def index():
     db_cursor.execute(
         f"SELECT * FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]} ORDER BY accname DESC")
     account_rows = db_cursor.fetchall()
-    length = [x for x in range(len(account_rows))]
+    length = len(account_rows)
     accountID = [account[AccountColumn.ACCNUM.value]
                  for account in account_rows]
     # extracts float from balances dict and formats it to currency notation
