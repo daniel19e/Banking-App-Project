@@ -215,9 +215,9 @@ def withdraw():
         return render_template('withdraw.html')
 
 
-@app.route("/transfer")
+@app.route("/transfer", methods=["GET", "POST"])
 def transfer():
-    pass
+    return render_template('transfer.html')
 
 
 @app.route("/history", methods=["GET", "POST"])
@@ -227,7 +227,8 @@ def history():
     db_cursor.execute(
         f"SELECT accname, type, amount, timestamp FROM Transaction NATURAL JOIN BankAccount ORDER BY timestamp DESC")
     transaction_rows = db_cursor.fetchall()
-    return render_template('history.html', transaction_rows=transaction_rows)
+    user = session["user_id"]
+    return render_template('history.html', transaction_rows=transaction_rows, user=user[2].capitalize() + " " + user[3].capitalize())
 
 
 @app.route("/account", methods=["GET", "POST"])
