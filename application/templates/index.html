@@ -21,7 +21,7 @@ Home
       {%if last_transaction[i][2] == "deposit"%}
       <p class="card-text"> Last Transaction:
         <span style="color:green">+${{last_transaction[i][0]}}</span> on
-        {{last_transaction[i][1]}} + {{last_transaction[i][2]}}
+        {{last_transaction[i][1]}}
       </p>
       {%elif last_transaction[i][2] == "withdraw" %}
       <p class="card-text"> Last Transaction:
