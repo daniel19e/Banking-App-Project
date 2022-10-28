@@ -71,6 +71,8 @@ def index():
 
     # get last four digits of account number to display
     last_four_digits = [str(x)[-4:] for x in accountID]
+    # this query groups the tables by different bank accounts owned by the current user
+    #
     db_cursor.execute(
         f"""SELECT amount, timestamp::date || ' at ' || timestamp::time, type FROM Transaction NATURAL JOIN BankAccount WHERE 
         timestamp IN (SELECT max(timestamp) FROM Transaction NATURAL JOIN BankAccount
@@ -114,6 +116,7 @@ def register():
         db_connection.commit()
         db_cursor.execute(f"SELECT * FROM BankUser WHERE UserID = {id}")
         session["user_id"] = db_cursor.fetchall()[UserColumn.UID.value]
+        # still need to set up flash messages
         flash("user created")
         return redirect('/')
 
@@ -133,6 +136,7 @@ def login():
         if not (user and bcrypt.check_password_hash(user[0][UserColumn.PWHASH.value], pw)):
             return render_template("error.html", error_text="Wrong credentials.")
         else:
+            # store logged in user as current user
             session["user_id"] = user[UserColumn.UID.value]
             return redirect("/")
     else:
@@ -201,6 +205,7 @@ def withdraw():
             f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
         acc_bal = db_cursor.fetchall()[0][0]
 
+        # make sure current balance is enough to withdraw the requested amount
         if float(amount) <= acc_bal:
             db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
                               (transaction_id, "withdraw", amount, timestamp, accNum))
@@ -217,6 +222,9 @@ def withdraw():
 
 @app.route("/transfer", methods=["GET", "POST"])
 def transfer():
+    # this method decreases the balance in the source account (get it from current account stored in session)
+    # and increases it in destination account (get it from form in template)
+    # it also stores a new entry in transaction table as well as in transfer table (similar to withdraw and deposit)
     if request.method == "POST":
         pass
     else:
