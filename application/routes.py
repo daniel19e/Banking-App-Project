@@ -56,7 +56,7 @@ def index():
         f"SELECT fname, lname FROM BankUser WHERE UserID = {currentuser[UserColumn.UID.value]}")
     user = db_cursor.fetchall()
     db_cursor.execute(
-        f"SELECT * FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]}")
+        f"SELECT * FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]} ORDER BY accname DESC")
     account_rows = db_cursor.fetchall()
     length = [x for x in range(len(account_rows))]
     accountID = [account[AccountColumn.ACCNUM.value]
@@ -71,6 +71,12 @@ def index():
 
     # get last four digits of account number to display
     last_four_digits = [str(x)[-4:] for x in accountID]
+    db_cursor.execute(
+        f"""SELECT amount, timestamp::date || ' at ' || timestamp::time, type FROM Transaction NATURAL JOIN BankAccount WHERE 
+        timestamp IN (SELECT max(timestamp) FROM Transaction NATURAL JOIN BankAccount
+        WHERE UserID = {currentuser[UserColumn.UID.value]} GROUP BY accnum) 
+        ORDER BY accname DESC""")
+    last_transaction = db_cursor.fetchall()
 
     return render_template("index.html", user=" ".join([x.capitalize() for x in user[0]]),
                            balanceStrings=balanceStrings,
@@ -78,10 +84,11 @@ def index():
                            length=length,
                            accountID=accountID,
                            typeStrings=typeStrings,
-                           last_four_digits=last_four_digits)
+                           last_four_digits=last_four_digits,
+                           last_transaction=last_transaction)
 
 
-@app.route("/register", methods=["GET", "POST"])
+@ app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         session.clear()
@@ -213,10 +220,14 @@ def transfer():
     pass
 
 
-@app.route("/history")
+@app.route("/history", methods=["GET", "POST"])
+@requirelogin
 def history():
     # all transactions made by current user for all of their accounts
-    pass
+    db_cursor.execute(
+        f"SELECT accname, type, amount, timestamp FROM Transaction NATURAL JOIN BankAccount ORDER BY timestamp DESC")
+    transaction_rows = db_cursor.fetchall()
+    return render_template('history.html', transaction_rows=transaction_rows)
 
 
 @app.route("/account", methods=["GET", "POST"])

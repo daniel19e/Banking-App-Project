@@ -1,0 +1,48 @@
+{% extends "navbar.html" %}
+
+{% block title %}
+User History
+{% endblock %}
+{% block main %}
+
+<div class="container mt-5 w-50">
+    <div class="card">
+        <div class="card-header">
+            Account Number: {{accNum}}
+        </div>
+        <div class="card-body">
+            <div style="float:left">
+                <h5 class="card-title">Transaction History for user</h5>
+            </div>
+            <p class="card-text">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Account</th>
+                        <th scope="col">Transaction Type</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in transaction_rows %}
+                    <tr>
+                        <td>{{row[0]}}</td>
+                        <td>{{row[1] | capitalize}}</td>
+                        {%if row[1] == "deposit"%}
+                        <td style="color: green">+${{row[2]}}</td>
+                        {%endif%}
+                        {%if row[1] == "withdraw"%}
+                        <td style="color: red">-${{row[2]}}</td>
+                        {%endif%}
+                        <td>{{row[3]}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
