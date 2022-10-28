@@ -217,7 +217,10 @@ def withdraw():
 
 @app.route("/transfer", methods=["GET", "POST"])
 def transfer():
-    return render_template('transfer.html')
+    if request.method == "POST":
+        pass
+    else:
+        return render_template('transfer.html')
 
 
 @app.route("/history", methods=["GET", "POST"])
