@@ -1,10 +1,9 @@
 {% extends "navbar.html" %}
-
 {% block title %}
-    Register
+Register
 {% endblock %}
 {% block main %}
- <div class="container mt-5 w-50">
+<div class="container mt-5 w-50">
     <form action="/register" method="post">
         <div class="form-group mb-3">
             <input autocomplete="off" autofocus class="form-control" name="email" placeholder="Email" type="email">
@@ -16,7 +15,8 @@
             <input autocomplete="off" autofocus class="form-control" name="lname" placeholder="Last Name" type="text">
         </div>
         <div class="form-group mb-3">
-            <input autocomplete="off" autofocus class="form-control" name="dob" placeholder="Date of Birth (mm/dd/yyyy)" type="text">
+            <input autocomplete="off" autofocus class="form-control" name="dob" placeholder="Date of Birth (mm/dd/yyyy)"
+                type="text">
         </div>
         <div class="form-group mb-3">
             <input class="form-control" name="password" placeholder="Password" type="password">
@@ -26,5 +26,4 @@
         </div>
         <button class="btn btn-info" type="submit">Register</button>
     </form>
-
-{% endblock %}
+    {% endblock %}
