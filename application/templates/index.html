@@ -17,6 +17,7 @@ Home
     </div>
     <div class="card-body">
       <h5 class="card-title">Available balance: ${{ balanceStrings[i]}}</h5>
+      {%if last_transaction[i] %}
       {%if last_transaction[i][2] == "deposit"%}
       <p class="card-text"> Last Transaction:
         <span style="color:green">+${{last_transaction[i][0]}}</span> on
@@ -27,6 +28,7 @@ Home
         <span style="color:red">-${{last_transaction[i][0]}}</span> on
         {{last_transaction[i][1]}}
       </p>
+      {%endif%}
       {%endif%}
       <a href="/account?accNum={{ accountID[i] }}" class="btn btn-info">Details</a>
     </div>
