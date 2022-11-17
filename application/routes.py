@@ -74,11 +74,17 @@ def index():
     # this query groups the tables by different bank accounts owned by the current user
     #
     db_cursor.execute(
-        f"""SELECT amount, timestamp::date || ' at ' || timestamp::time, type FROM Transaction NATURAL JOIN BankAccount WHERE 
-        timestamp IN (SELECT max(timestamp) FROM Transaction NATURAL JOIN BankAccount
-        WHERE UserID = {currentuser[UserColumn.UID.value]} GROUP BY accnum) 
-        ORDER BY accname DESC""")
-    last_transaction = db_cursor.fetchall()
+        f"SELECT accnum FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]} ORDER BY accname DESC")
+    account_tuples = db_cursor.fetchall()
+    last_transaction = []
+    for account in account_tuples:
+        db_cursor.execute(
+            f"SELECT amount, timestamp::date || ' at ' || timestamp::time, type FROM Transaction WHERE accnum = {account[0]} ORDER BY timestamp DESC LIMIT 1")
+        transact = db_cursor.fetchall()
+        if not transact:
+            last_transaction.append([])
+        else:
+            last_transaction.append(transact[0])
 
     return render_template("index.html", user=" ".join([x.capitalize() for x in user[0]]),
                            balanceStrings=balanceStrings,
