@@ -241,10 +241,10 @@ def transfer():
 @requirelogin
 def history():
     # all transactions made by current user for all of their accounts
-    db_cursor.execute(
-        f"SELECT accname, type, amount, timestamp FROM Transaction NATURAL JOIN BankAccount ORDER BY timestamp DESC")
-    transaction_rows = db_cursor.fetchall()
     user = session["user_id"]
+    db_cursor.execute(
+        f"SELECT accname, type, amount, timestamp FROM Transaction NATURAL JOIN BankAccount WHERE UserID = {user[0]} ORDER BY timestamp DESC")
+    transaction_rows = db_cursor.fetchall()
     return render_template('history.html', transaction_rows=transaction_rows, user=user[2].capitalize() + " " + user[3].capitalize())
 
 
