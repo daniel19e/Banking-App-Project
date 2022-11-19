@@ -79,12 +79,22 @@ def index():
     last_transaction = []
     for account in account_tuples:
         db_cursor.execute(
-            f"SELECT amount, timestamp::date || ' at ' || timestamp::time, type FROM Transaction WHERE accnum = {account[0]} ORDER BY timestamp DESC LIMIT 1")
+            f"SELECT amount, timestamp, type FROM Transaction WHERE accnum={account[0]}  ORDER BY timestamp DESC LIMIT 1")
         transact = db_cursor.fetchall()
-        if not transact:
-            last_transaction.append([])
-        else:
+        db_cursor.execute(
+            f"SELECT amount, timestamp, type || 'from' FROM Transaction NATURAL JOIN Transfer WHERE destination={account[0]} ORDER BY timestamp DESC LIMIT 1")
+        incoming_transfer = db_cursor.fetchall()
+        if transact and incoming_transfer and transact[0][1] < incoming_transfer[0][1]:
+            last_transaction.append(incoming_transfer[0])
+        elif transact and incoming_transfer and transact[0][1] > incoming_transfer[0][1]:
             last_transaction.append(transact[0])
+        else:
+            if transact:
+                last_transaction.append(transact[0])
+            elif incoming_transfer:
+                last_transaction.append(incoming_transfer[0])
+            else:
+                last_transaction.append([])
 
     return render_template("index.html", user=" ".join([x.capitalize() for x in user[0]]),
                            balanceStrings=balanceStrings,
@@ -130,7 +140,7 @@ def register():
         return render_template("register.html")
 
 
-@app.route("/login", methods=["GET", "POST"])
+@ app.route("/login", methods=["GET", "POST"])
 def login():
     session.clear()
     if request.method == "POST":
@@ -149,14 +159,14 @@ def login():
         return render_template("login.html")
 
 
-@app.route("/logout", methods=["GET", "POST"])
+@ app.route("/logout", methods=["GET", "POST"])
 def logout():
     session.clear()
     return redirect("/login")
 
 
-@app.route("/createaccount", methods=["GET", "POST"])
-@requirelogin
+@ app.route("/createaccount", methods=["GET", "POST"])
+@ requirelogin
 def createaccount():
     if request.method == "POST":
         # gets userID from session, account name from text entry and accounttype from btn value in createaccount.html
@@ -177,8 +187,8 @@ def createaccount():
         return render_template("createaccount.html")
 
 
-@app.route("/deposit", methods=["GET", "POST"])
-@requirelogin
+@ app.route("/deposit", methods=["GET", "POST"])
+@ requirelogin
 def deposit():
     if request.method == "POST":
         amount = request.form.get("amount")
@@ -199,8 +209,8 @@ def deposit():
         return render_template('deposit.html')
 
 
-@app.route("/withdraw", methods=["GET", "POST"])
-@requirelogin
+@ app.route("/withdraw", methods=["GET", "POST"])
+@ requirelogin
 def withdraw():
     if request.method == "POST":
         amount = request.form.get("amount")
@@ -226,19 +236,57 @@ def withdraw():
         return render_template('withdraw.html')
 
 
-@app.route("/transfer", methods=["GET", "POST"])
+@ app.route("/transfer", methods=["GET", "POST"])
+@ requirelogin
+# this method decreases the balance in the source account (get it from current account stored in session)
+# and increases it in destination account (get it from form in template)
+# it also stores a new entry in transaction table as well as in transfer table (similar to withdraw and deposit)
+# transfer to (red) shows amount and last 4 digits of the account it was transfered to
+# transfer from (green) shows amount and last 4 of account it's recieved from
+# need new row in both transfer and transaction tables, join transaction and transfer table to get the acct num
+# to avoid mistakes the user is required to input the first & last name & acc number of the person they want to transfer money to
+# TO DO: come up with a better way for the user to make sure they are sending to the right acc without having to use acc number
 def transfer():
-    # this method decreases the balance in the source account (get it from current account stored in session)
-    # and increases it in destination account (get it from form in template)
-    # it also stores a new entry in transaction table as well as in transfer table (similar to withdraw and deposit)
     if request.method == "POST":
-        pass
+        amount = request.form.get("amount")
+        transaction_id = uuid.uuid4().int & (1 << 30)-1
+        timestamp = datetime.now()
+        accNum = session["accNum"]
+        db_cursor.execute(
+            f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
+        acc_bal = db_cursor.fetchall()[0][0]
+
+        destination_acc = request.form.get("destination")  # destination
+        db_cursor.execute(
+            f" SELECT balance FROM BankAccount WHERE accNum = {destination_acc}")
+        second_acct_bal = db_cursor.fetchall()[0][0]
+        if not destination_acc:  # {destination_acc}
+            return render_template('error.html', error_text="Need to provide a destination account")
+        db_cursor.execute(
+            f"SELECT * from BankAccount WHERE AccNum = {destination_acc}")  # destination acct number
+        if not db_cursor.fetchall():
+            return render_template('error.html', error_text="Can't transfer amount, because account doesn't exist.")
+
+        # make sure current balance is enough to transfer the requested amount
+        if float(amount) < acc_bal:
+            db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
+                              (transaction_id, "transfer", amount, timestamp, accNum))
+            db_cursor.execute(
+                "INSERT INTO Transfer (transactionID, destination) VALUES (%s, %s)", (transaction_id, destination_acc))
+            db_cursor.execute(  # {accNum}
+                f"UPDATE BankAccount SET balance = {acc_bal} - {amount} WHERE accnum = {accNum}")
+            db_cursor.execute(
+                f"UPDATE BankAccount SET balance = {second_acct_bal} + {amount} WHERE accnum = {destination_acc}")
+            db_connection.commit()
+        else:
+            return render_template('error.html', error_text="Can't withdraw more than current balance :,( ")
+        return redirect('/')
     else:
         return render_template('transfer.html')
 
 
-@app.route("/history", methods=["GET", "POST"])
-@requirelogin
+@ app.route("/history", methods=["GET", "POST"])
+@ requirelogin
 def history():
     # all transactions made by current user for all of their accounts
     user = session["user_id"]
@@ -248,8 +296,8 @@ def history():
     return render_template('history.html', transaction_rows=transaction_rows, user=user[2].capitalize() + " " + user[3].capitalize())
 
 
-@app.route("/account", methods=["GET", "POST"])
-@requirelogin
+@ app.route("/account", methods=["GET", "POST"])
+@ requirelogin
 def account():
     accNum = request.args.get('accNum')
     session["accNum"] = accNum
@@ -257,7 +305,12 @@ def account():
         f"SELECT balance FROM BankAccount WHERE accnum = {accNum}")
     bal = db_cursor.fetchall()
     bal = ("{:.2f}".format(bal[0][0]))
-    db_cursor.execute(f"SELECT * FROM transaction WHERE AccNum = {accNum}")
+    db_cursor.execute(
+        f"SELECT transaction.transactionid, type, amount, timestamp, accnum, destination FROM transaction LEFT JOIN transfer ON transaction.transactionid = transfer.transactionid WHERE AccNum = {accNum}")
     transaction_history = db_cursor.fetchall()
+    db_cursor.execute(
+        f"SELECT transaction.transactionid, type || ' from', amount, timestamp, accnum, destination FROM transaction LEFT JOIN transfer ON transaction.transactionid = transfer.transactionid WHERE destination = {accNum}")
+    for tuple in db_cursor.fetchall():
+        transaction_history.append(tuple)
     transaction_history.reverse()
     return render_template('account.html', accNum=accNum, bal=bal, transaction_rows=transaction_history)

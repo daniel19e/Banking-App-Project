@@ -28,6 +28,16 @@ Home
         <span style="color:red">-${{last_transaction[i][0]}}</span> on
         {{last_transaction[i][1]}}
       </p>
+      {%elif last_transaction[i][2] == "transfer" %}
+      <p class="card-text"> Last Transaction:
+        <span style="color:red">-${{last_transaction[i][0]}}</span> transfer on
+        {{last_transaction[i][1]}}
+      </p>
+      {%elif last_transaction[i][2] == "transferfrom" %}
+      <p class="card-text"> Last Transaction:
+        <span style="color:green">+${{last_transaction[i][0]}}</span> transfer on
+        {{last_transaction[i][1]}}
+      </p>
       {%endif%}
       {%endif%}
       <a href="/account?accNum={{ accountID[i] }}" class="btn btn-info">Details</a>

@@ -29,12 +29,25 @@ Account Details
         <tbody>
           {% for row in transaction_rows %}
           <tr>
-            <td>{{row[1] | capitalize}}</td>
+
             {%if row[1] == "deposit"%}
+            <td>{{row[1] | capitalize}}</td>
             <td style="color: green">+${{row[2]}}</td>
             {%endif%}
+
             {%if row[1] == "withdraw"%}
+            <td>{{row[1] | capitalize}}</td>
             <td style="color: red">-${{row[2]}}</td>
+            {%endif%}
+
+            {%if row[1] == "transfer"%}
+            <td>{{row[1] | capitalize}} to {{row[5]}}</td>
+            <!-- row[5] is the postion of the destination acct number in the tuple-->
+            <td style="color: red">-${{row[2]}}</td>
+            {%endif%}
+            {%if "transfer from" in row[1] %}
+            <td>{{row[1] | capitalize}} from {{row[4]}}</td>
+            <td style="color: green">+${{row[2]}}</td>
             {%endif%}
             <td>{{row[3]}}</td>
           </tr>

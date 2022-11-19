@@ -33,6 +33,9 @@ User History
                         {%if row[1] == "withdraw"%}
                         <td style="color: red">-${{row[2]}}</td>
                         {%endif%}
+                        {%if row[1] == "transfer"%}
+                        <td style="color: red">-${{row[2]}}</td>
+                        {%endif%}
                         <td>{{row[3]}}</td>
                     </tr>
                     {% endfor %}
