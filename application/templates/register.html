@@ -4,26 +4,38 @@ Register
 {% endblock %}
 {% block main %}
 <div class="container mt-5 w-50">
-    <form action="/register" method="post">
-        <div class="form-group mb-3">
-            <input autocomplete="off" autofocus class="form-control" name="email" placeholder="Email" type="email">
+    <div class="card">
+        <div class="card-header">
+            Create a new account
         </div>
-        <div class="form-group mb-3">
-            <input autocomplete="off" autofocus class="form-control" name="fname" placeholder="First Name" type="text">
+        <div class="card-body">
+            <form action="/register" method="post">
+                <div class="form-group mb-3">
+                    <input autocomplete="off" autofocus class="form-control" name="email" placeholder="Email"
+                        type="email" required>
+                </div>
+                <div class="form-group mb-3">
+                    <input autocomplete="off" autofocus class="form-control" name="fname" placeholder="First Name"
+                        type="text" required>
+                </div>
+                <div class="form-group mb-3">
+                    <input autocomplete="off" autofocus class="form-control" name="lname" placeholder="Last Name"
+                        type="text" required>
+                </div>
+                <div class="form-group mb-3">
+                    <input autocomplete="off" autofocus class="form-control" name="dob"
+                        placeholder="Date of Birth (mm/dd/yyyy)" type="text" required>
+                </div>
+                <div class="form-group mb-3">
+                    <input class="form-control" name="password" placeholder="Password" type="password" required>
+                </div>
+                <div class="form-group mb-3">
+                    <input class="form-control" name="pwconfirmation" placeholder="Confirm password" type="password"
+                        required>
+                </div>
+                <button class="btn btn-info" type="submit">Register</button>
+            </form>
         </div>
-        <div class="form-group mb-3">
-            <input autocomplete="off" autofocus class="form-control" name="lname" placeholder="Last Name" type="text">
-        </div>
-        <div class="form-group mb-3">
-            <input autocomplete="off" autofocus class="form-control" name="dob" placeholder="Date of Birth (mm/dd/yyyy)"
-                type="text">
-        </div>
-        <div class="form-group mb-3">
-            <input class="form-control" name="password" placeholder="Password" type="password">
-        </div>
-        <div class="form-group mb-3">
-            <input class="form-control" name="pwconfirmation" placeholder="Confirm password" type="password">
-        </div>
-        <button class="btn btn-info" type="submit">Register</button>
-    </form>
+    </div>
+
     {% endblock %}

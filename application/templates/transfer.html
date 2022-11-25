@@ -4,15 +4,23 @@ Transfer Money
 {% endblock %}
 {% block main %}
 <div class="container mt-5 w-50">
-    <form action="/transfer" method="post">
-        <div class="form-group mb-3">
-            <input autocomplete="off" autofocus class="form-control" name="amount" placeholder="Transfer Amount"
-                type="text">
+    <div class="card">
+        <div class="card-header">
+            Transfer Money
         </div>
-        <div class="form-group mb-3">
-            <input autocomplete="off" autofocus class="form-control" name="destination"
-                placeholder="Destination Account" type="text">
+        <div class="card-body">
+            <form action="/transfer" method="post">
+                <div class="form-group mb-3">
+                    <input autocomplete="off" autofocus class="form-control" name="amount" placeholder="Transfer Amount"
+                        type="text">
+                </div>
+                <div class="form-group mb-3">
+                    <input autocomplete="off" autofocus class="form-control" name="destination"
+                        placeholder="Destination Account" type="text">
+                </div>
+                <button class="btn btn-info" type="submit">Transfer</button>
+            </form>
         </div>
-        <button class="btn btn-info" type="submit">Transfer</button>
-    </form>
+    </div>
+
     {% endblock %}

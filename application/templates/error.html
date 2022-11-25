@@ -3,7 +3,13 @@
 Error
 {% endblock %}
 {% block main %}
-<div class="container mt-5 w-50">
-    <h1> There has been an error. {{ error_text }}</h1>
+<div class="container mt-5 w-25">
+    <div class="card" style="width: 18rem;">
+        <img class="card-img-bottom" src="static/error.png" alt="error image">
+        <div class="card-body">
+            <h3> Too bad!</h3>
+            <h3> {{ error_text }}</h3>
+        </div>
+    </div>
 </div>
 {% endblock %}
