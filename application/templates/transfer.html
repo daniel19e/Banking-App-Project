@@ -12,11 +12,11 @@ Transfer Money
             <form action="/transfer" method="post">
                 <div class="form-group mb-3">
                     <input autocomplete="off" autofocus class="form-control" name="amount" placeholder="Transfer Amount"
-                        type="text">
+                        type="number" step="0.01">
                 </div>
                 <div class="form-group mb-3">
                     <input autocomplete="off" autofocus class="form-control" name="destination"
-                        placeholder="Destination Account" type="text">
+                        placeholder="Destination Account" type="number">
                 </div>
                 <button class="btn btn-info" type="submit">Transfer</button>
             </form>
