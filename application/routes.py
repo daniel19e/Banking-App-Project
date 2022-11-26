@@ -53,10 +53,10 @@ def index():
     # also, when we click on one particular account it should show history for that account
     currentuser = session["user_id"]
     db_cursor.execute(
-        f"SELECT fname, lname FROM BankUser WHERE UserID = {currentuser[UserColumn.UID.value]}")
+        "SELECT fname, lname FROM BankUser WHERE UserID = %s", (currentuser[UserColumn.UID.value],))
     user = db_cursor.fetchall()
     db_cursor.execute(
-        f"SELECT * FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]} ORDER BY accname DESC")
+        "SELECT * FROM BankAccount WHERE UserID = %s ORDER BY accname DESC", (currentuser[UserColumn.UID.value],))
     account_rows = db_cursor.fetchall()
     length = len(account_rows)
     accountID = [account[AccountColumn.ACCNUM.value]
@@ -74,15 +74,15 @@ def index():
     # this query groups the tables by different bank accounts owned by the current user
     #
     db_cursor.execute(
-        f"SELECT accnum FROM BankAccount WHERE UserID = {currentuser[UserColumn.UID.value]} ORDER BY accname DESC")
+        "SELECT accnum FROM BankAccount WHERE UserID = %s ORDER BY accname DESC", (currentuser[UserColumn.UID.value],))
     account_tuples = db_cursor.fetchall()
     last_transaction = []
     for account in account_tuples:
         db_cursor.execute(
-            f"SELECT amount, timestamp, type FROM Transaction WHERE accnum={account[0]}  ORDER BY timestamp DESC LIMIT 1")
+            "SELECT amount, timestamp, type FROM Transaction WHERE accnum=%s  ORDER BY timestamp DESC LIMIT 1", (account[0],))
         transact = db_cursor.fetchall()
         db_cursor.execute(
-            f"SELECT amount, timestamp, type || 'from' FROM Transaction NATURAL JOIN Transfer WHERE destination={account[0]} ORDER BY timestamp DESC LIMIT 1")
+            "SELECT amount, timestamp, type || 'from' FROM Transaction NATURAL JOIN Transfer WHERE destination=%s ORDER BY timestamp DESC LIMIT 1", (account[0],))
         incoming_transfer = db_cursor.fetchall()
         if transact and incoming_transfer and transact[0][1] < incoming_transfer[0][1]:
             last_transaction.append(incoming_transfer[0])
@@ -112,7 +112,7 @@ def register():
         session.clear()
         id = uuid.uuid4().int & (1 << 30)-1
         email = request.form.get("email")
-        db_cursor.execute(f"SELECT * FROM BankUser WHERE email = '{email}'")
+        db_cursor.execute("SELECT * FROM BankUser WHERE email = %s", (email,))
         if len(db_cursor.fetchall()):
             # email already in database
             return render_template('error.html', error_text="Email already registered")
@@ -130,7 +130,7 @@ def register():
         db_cursor.execute("INSERT INTO BankUser (UserID, Dob, Fname, Lname, Email, PwHash) VALUES (%s, %s, %s, %s, %s, %s)",
                           (id, dob, fname, lname, email, hashpw))
         db_connection.commit()
-        db_cursor.execute(f"SELECT * FROM BankUser WHERE UserID = {id}")
+        db_cursor.execute("SELECT * FROM BankUser WHERE UserID = %s", (id,))
         session["user_id"] = db_cursor.fetchall()[UserColumn.UID.value]
         # still need to set up flash messages
         flash("user created")
@@ -146,7 +146,7 @@ def login():
     if request.method == "POST":
         email = request.form.get("email")
         pw = request.form.get("password")
-        db_cursor.execute(f"SELECT * FROM BankUser WHERE Email = '{email}'")
+        db_cursor.execute("SELECT * FROM BankUser WHERE Email = %s", (email,))
         user = db_cursor.fetchall()
         # check email is in database and input password matches the hashed password stored
         if not (user and bcrypt.check_password_hash(user[0][UserColumn.PWHASH.value], pw)):
@@ -196,13 +196,13 @@ def deposit():
         timestamp = datetime.now()
         accNum = session["accNum"]
         db_cursor.execute(
-            f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
+            "SELECT balance FROM BankAccount WHERE accNum = %s", (accNum,))
         acc_bal = db_cursor.fetchall()[0][0]
         db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
                           (transaction_id, "deposit", amount, timestamp, accNum))
 
         db_cursor.execute(
-            f"UPDATE BankAccount SET balance = {acc_bal} + {amount} WHERE AccNum = {accNum}")
+            "UPDATE BankAccount SET balance = %s + %s WHERE AccNum = %s", (acc_bal, amount, accNum,))
         db_connection.commit()
         return redirect('/')
     else:
@@ -218,7 +218,7 @@ def withdraw():
         timestamp = datetime.now()
         accNum = session["accNum"]
         db_cursor.execute(
-            f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
+            "SELECT balance FROM BankAccount WHERE accNum = %s", (accNum,))
         acc_bal = db_cursor.fetchall()[0][0]
 
         # make sure current balance is enough to withdraw the requested amount
@@ -226,7 +226,7 @@ def withdraw():
             db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
                               (transaction_id, "withdraw", amount, timestamp, accNum))
             db_cursor.execute(
-                f"UPDATE BankAccount SET balance = {acc_bal} - {amount} WHERE AccNum = {accNum}")
+                "UPDATE BankAccount SET balance = %s - %s WHERE AccNum = %s", (acc_bal, amount, accNum,))
             db_connection.commit()
         else:
             return render_template('error.html', error_text="Can't withdraw more than current balance :,( ")
@@ -253,33 +253,34 @@ def transfer():
         timestamp = datetime.now()
         accNum = session["accNum"]
         db_cursor.execute(
-            f"SELECT balance FROM BankAccount WHERE accNum = {accNum}")
+            "SELECT balance FROM BankAccount WHERE accNum = %s", (accNum,))
         acc_bal = db_cursor.fetchall()[0][0]
 
         destination_acc = request.form.get("destination")  # destination
-        db_cursor.execute(
-            f" SELECT balance FROM BankAccount WHERE accNum = {destination_acc}")
-        second_acct_bal = db_cursor.fetchall()[0][0]
+        if destination_acc == accNum:
+            return render_template('error.html', error_text="Cannot transfer to same account")
         if not destination_acc:  # {destination_acc}
             return render_template('error.html', error_text="Need to provide a destination account")
         db_cursor.execute(
-            f"SELECT * from BankAccount WHERE AccNum = {destination_acc}")  # destination acct number
+            "SELECT * from BankAccount WHERE AccNum = %s", (destination_acc,))  # destination acct number
         if not db_cursor.fetchall():
-            return render_template('error.html', error_text="Can't transfer amount, because account doesn't exist.")
-
+            return render_template('error.html', error_text="Can't transfer to an account that doesn't exist")
+        db_cursor.execute(
+            "SELECT balance FROM BankAccount WHERE accNum = %s", (destination_acc,))
+        second_acct_bal = db_cursor.fetchall()[0][0]
         # make sure current balance is enough to transfer the requested amount
-        if float(amount) < acc_bal:
+        if float(amount) <= acc_bal:
             db_cursor.execute("INSERT INTO Transaction(transactionID, type, amount, timestamp, accnum) VALUES (%s, %s, %s, %s, %s)",
                               (transaction_id, "transfer", amount, timestamp, accNum))
             db_cursor.execute(
                 "INSERT INTO Transfer (transactionID, destination) VALUES (%s, %s)", (transaction_id, destination_acc))
             db_cursor.execute(  # {accNum}
-                f"UPDATE BankAccount SET balance = {acc_bal} - {amount} WHERE accnum = {accNum}")
+                "UPDATE BankAccount SET balance = %s - %s WHERE accnum = %s", (acc_bal, amount, accNum,))
             db_cursor.execute(
-                f"UPDATE BankAccount SET balance = {second_acct_bal} + {amount} WHERE accnum = {destination_acc}")
+                "UPDATE BankAccount SET balance = %s + %s WHERE accnum = %s", (second_acct_bal, amount, destination_acc,))
             db_connection.commit()
         else:
-            return render_template('error.html', error_text="Can't withdraw more than current balance :,( ")
+            return render_template('error.html', error_text="Can't withdraw more than current balance.")
         return redirect('/')
     else:
         return render_template('transfer.html')
@@ -291,7 +292,7 @@ def history():
     # all transactions made by current user for all of their accounts
     user = session["user_id"]
     db_cursor.execute(
-        f"SELECT accname, type, amount, timestamp FROM Transaction NATURAL JOIN BankAccount WHERE UserID = {user[0]} ORDER BY timestamp DESC")
+        "SELECT accname, type, amount, timestamp FROM Transaction NATURAL JOIN BankAccount WHERE UserID = %s ORDER BY timestamp DESC", (user[0],))
     transaction_rows = db_cursor.fetchall()
     return render_template('history.html', transaction_rows=transaction_rows, user=user[2].capitalize() + " " + user[3].capitalize())
 
@@ -302,14 +303,14 @@ def account():
     accNum = request.args.get('accNum')
     session["accNum"] = accNum
     db_cursor.execute(
-        f"SELECT balance FROM BankAccount WHERE accnum = {accNum}")
+        "SELECT balance FROM BankAccount WHERE accnum = %s", (accNum,))
     bal = db_cursor.fetchall()
     bal = ("{:.2f}".format(bal[0][0]))
     db_cursor.execute(
-        f"SELECT transaction.transactionid, type, amount, timestamp, accnum, destination FROM transaction LEFT JOIN transfer ON transaction.transactionid = transfer.transactionid WHERE AccNum = {accNum}")
+        "SELECT transaction.transactionid, type, amount, timestamp, accnum, destination FROM transaction LEFT JOIN transfer ON transaction.transactionid = transfer.transactionid WHERE AccNum = %s", (accNum,))
     transaction_history = db_cursor.fetchall()
     db_cursor.execute(
-        f"SELECT transaction.transactionid, type || ' from', amount, timestamp, accnum, destination FROM transaction LEFT JOIN transfer ON transaction.transactionid = transfer.transactionid WHERE destination = {accNum}")
+        "SELECT transaction.transactionid, type || ' from', amount, timestamp, accnum, destination FROM transaction LEFT JOIN transfer ON transaction.transactionid = transfer.transactionid WHERE destination = %s", (accNum,))
     for tuple in db_cursor.fetchall():
         transaction_history.append(tuple)
     transaction_history.reverse()

@@ -4,45 +4,50 @@ Home
 {% endblock %}
 {% block main %}
 <div class="container mt-5 w-50">
-  <h1> Welcome {{ user }}!</h1>
-  {% for i in range(length) %}
-  <div class="card mt-3" style="width:50rem">
-    <div class="card-header">
-      <div style="float:left">
-        {{ nameStrings[i] }} (...{{ last_four_digits[i]}})
-      </div>
-      <div style="float:right">
-        {{ typeStrings[i] }}
-      </div>
-    </div>
+  <div class="card">
     <div class="card-body">
-      <h5 class="card-title">Available balance: ${{ balanceStrings[i]}}</h5>
-      {%if last_transaction[i] %}
-      {%if last_transaction[i][2] == "deposit"%}
-      <p class="card-text"> Last Transaction:
-        <span style="color:green">+${{last_transaction[i][0]}}</span> on
-        {{last_transaction[i][1]}}
-      </p>
-      {%elif last_transaction[i][2] == "withdraw" %}
-      <p class="card-text"> Last Transaction:
-        <span style="color:red">-${{last_transaction[i][0]}}</span> on
-        {{last_transaction[i][1]}}
-      </p>
-      {%elif last_transaction[i][2] == "transfer" %}
-      <p class="card-text"> Last Transaction:
-        <span style="color:red">-${{last_transaction[i][0]}}</span> transfer on
-        {{last_transaction[i][1]}}
-      </p>
-      {%elif last_transaction[i][2] == "transferfrom" %}
-      <p class="card-text"> Last Transaction:
-        <span style="color:green">+${{last_transaction[i][0]}}</span> transfer on
-        {{last_transaction[i][1]}}
-      </p>
-      {%endif%}
-      {%endif%}
-      <a href="/account?accNum={{ accountID[i] }}" class="btn btn-info">Details</a>
+      <h1> Welcome {{ user }}!</h1>
+      {% for i in range(length) %}
+      <div class="card mt-3" style="width:40rem">
+        <div class="card-header">
+          <div style="float:left">
+            {{ nameStrings[i] }} (...{{ last_four_digits[i]}})
+          </div>
+          <div style="float:right">
+            {{ typeStrings[i] }}
+          </div>
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">Available balance: ${{ balanceStrings[i]}}</h5>
+          {%if last_transaction[i] %}
+          {%if last_transaction[i][2] == "deposit"%}
+          <p class="card-text"> Last Transaction:
+            <span style="color:green">+${{last_transaction[i][0]}}</span> on
+            {{last_transaction[i][1]}}
+          </p>
+          {%elif last_transaction[i][2] == "withdraw" %}
+          <p class="card-text"> Last Transaction:
+            <span style="color:red">-${{last_transaction[i][0]}}</span> on
+            {{last_transaction[i][1]}}
+          </p>
+          {%elif last_transaction[i][2] == "transfer" %}
+          <p class="card-text"> Last Transaction:
+            <span style="color:red">-${{last_transaction[i][0]}}</span> transfer on
+            {{last_transaction[i][1]}}
+          </p>
+          {%elif last_transaction[i][2] == "transferfrom" %}
+          <p class="card-text"> Last Transaction:
+            <span style="color:green">+${{last_transaction[i][0]}}</span> transfer on
+            {{last_transaction[i][1]}}
+          </p>
+          {%endif%}
+          {%endif%}
+          <a href="/account?accNum={{ accountID[i] }}" class="btn btn-info">Details</a>
+        </div>
+      </div>
+      {% endfor %}
     </div>
   </div>
-  {% endfor %}
 </div>
+
 {% endblock %}
