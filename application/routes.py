@@ -192,6 +192,8 @@ def createaccount():
 def deposit():
     if request.method == "POST":
         amount = request.form.get("amount")
+        if int(amount) < 0:
+            return render_template('error.html', error_text="Transaction amount must be greater than 0")
         transaction_id = uuid.uuid4().int & (1 << 30)-1
         timestamp = datetime.now()
         accNum = session["accNum"]
@@ -214,6 +216,8 @@ def deposit():
 def withdraw():
     if request.method == "POST":
         amount = request.form.get("amount")
+        if int(amount) < 0:
+            return render_template('error.html', error_text="Transaction amount must be greater than 0")
         transaction_id = uuid.uuid4().int & (1 << 30)-1
         timestamp = datetime.now()
         accNum = session["accNum"]
@@ -238,17 +242,14 @@ def withdraw():
 
 @ app.route("/transfer", methods=["GET", "POST"])
 @ requirelogin
-# this method decreases the balance in the source account (get it from current account stored in session)
-# and increases it in destination account (get it from form in template)
-# it also stores a new entry in transaction table as well as in transfer table (similar to withdraw and deposit)
-# transfer to (red) shows amount and last 4 digits of the account it was transfered to
-# transfer from (green) shows amount and last 4 of account it's recieved from
-# need new row in both transfer and transaction tables, join transaction and transfer table to get the acct num
-# to avoid mistakes the user is required to input the first & last name & acc number of the person they want to transfer money to
-# TO DO: come up with a better way for the user to make sure they are sending to the right acc without having to use acc number
 def transfer():
+    # this method decreases the balance in the source account (get it from current account stored in session)
+    # and increases it in destination account (get it from form in template)
+    # it also stores a new entry in transaction table as well as in transfer table (similar to withdraw and deposit)
     if request.method == "POST":
         amount = request.form.get("amount")
+        if int(amount) < 0:
+            return render_template('error.html', error_text="Transaction amount must be greater than 0")
         transaction_id = uuid.uuid4().int & (1 << 30)-1
         timestamp = datetime.now()
         accNum = session["accNum"]
