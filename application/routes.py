@@ -314,5 +314,7 @@ def account():
         "SELECT transaction.transactionid, type || ' from', amount, timestamp, accnum, destination FROM transaction LEFT JOIN transfer ON transaction.transactionid = transfer.transactionid WHERE destination = %s", (accNum,))
     for tuple in db_cursor.fetchall():
         transaction_history.append(tuple)
+    transaction_history.sort(key=lambda x: x[3])
     transaction_history.reverse()
+
     return render_template('account.html', accNum=accNum, bal=bal, transaction_rows=transaction_history)
