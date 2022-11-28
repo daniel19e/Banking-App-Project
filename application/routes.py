@@ -192,7 +192,7 @@ def createaccount():
 def deposit():
     if request.method == "POST":
         amount = request.form.get("amount")
-        if int(amount) < 0:
+        if float(amount) < 0:
             return render_template('error.html', error_text="Transaction amount must be greater than 0")
         transaction_id = uuid.uuid4().int & (1 << 30)-1
         timestamp = datetime.now()
@@ -216,7 +216,7 @@ def deposit():
 def withdraw():
     if request.method == "POST":
         amount = request.form.get("amount")
-        if int(amount) < 0:
+        if float(amount) < 0:
             return render_template('error.html', error_text="Transaction amount must be greater than 0")
         transaction_id = uuid.uuid4().int & (1 << 30)-1
         timestamp = datetime.now()
@@ -248,7 +248,7 @@ def transfer():
     # it also stores a new entry in transaction table as well as in transfer table (similar to withdraw and deposit)
     if request.method == "POST":
         amount = request.form.get("amount")
-        if int(amount) < 0:
+        if float(amount) < 0:
             return render_template('error.html', error_text="Transaction amount must be greater than 0")
         transaction_id = uuid.uuid4().int & (1 << 30)-1
         timestamp = datetime.now()
