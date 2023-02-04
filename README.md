@@ -1,5 +1,5 @@
 # Banking-App-Project
-Final Group Project DB Design
+Authors: Daniel Escalona, Samuel Pike, Lorena Basulto
 
 ## Description
 
